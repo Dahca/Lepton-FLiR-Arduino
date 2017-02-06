@@ -30,35 +30,49 @@
 
 // Library Setup
 
-// Uncomment this define to enable use of the software i2c library (min 4MHz+ processor required).
-//#define LEPFLIR_ENABLE_SOFTWARE_I2C     1   // http://playground.arduino.cc/Main/SoftwareI2CLibrary
+// Uncomment this define to enable use of the software i2c library
+// (min 4MHz+ processor required).
+// -- http://playground.arduino.cc/Main/SoftwareI2CLibrary
+//#define LEPFLIR_ENABLE_SOFTWARE_I2C     1
 
-// Uncomment this define to disable usage of the Scheduler library on SAM/SAMD architecures.
-//#define LEPFLIR_DISABLE_SCHEDULER       1   // https://github.com/arduino-libraries/Scheduler
+// Uncomment this define to disable usage of the Scheduler library on SAM/SAMD
+// architecures.
+// -- https://github.com/arduino-libraries/Scheduler
+//#define LEPFLIR_DISABLE_SCHEDULER       1
 
-// Uncomment this define to disable 16 byte aligned memory allocations (may hinder performance).
+// Uncomment this define to disable 16 byte aligned memory allocations
+// (may hinder performance).
 //#define LEPFLIR_DISABLE_ALIGNED_MALLOC  1
 
-// Uncomment this define if wanting to exclude extended i2c functions from compilation.
+// Uncomment this define if wanting to exclude extended i2c functions from
+// compilation.
 //#define LEPFLIR_EXCLUDE_EXT_I2C_FUNCS   1
 
 // Uncomment this define to enable debug output.
-//#define LEPFLIR_ENABLE_DEBUG_OUTPUT     1
+#define LEPFLIR_ENABLE_DEBUG_OUTPUT     1
+
+// (iangneal) I'm sure this does something specific.
+//#define LEPFLIR_ENABLE_FRAME_PACKET_DEBUG_OUTPUT    1
 
 // Hookup Instructions
-// Make sure to hookup the module's SPI lines MISO, MOSI, CLK (aka SCK), and CS (aka SS)
-// correctly (Due, Zero, ATmega, etc. often use pins 50=MISO, 51=MOSI, 52=SCK, 53=SS, but
-// one can just simply use the ICSP header pins ICSP-1=MISO, ICSP-4=MOSI, ICSP-3=SCK,
-// which are consistent across all boards - Due boards also have a SPI header, which is
-// set up exactly like the ICSP header). The module's MOSI line can simply be grounded
-// since the module only uses SPI for slave-out data transfers (slave-in data transfers
-// being ignored). The SS pin may be any digital output pin, with usage being active-low.
-// The recommended VCC power supply and logic level is 3.3v, but 5v is also supported.
-// The two issolated power pins on the side of the module's breakout can safely be left
-// disconnected. The minimum SPI transfer rate is ~2.2MHz, which means one needs at least
-// an 8MHz processor, but a 16MHz processor is the recommended minimum given the actual
-// processing work involved to resize/BLIT the final image. The actual SPI transfer rate
-// selected will be the first rate equal to or below 20MHz given the SPI clock divider
+//
+// Make sure to hookup the module's SPI lines MISO, MOSI, CLK (aka SCK), and
+// CS (aka SS) correctly (Due, Zero, ATmega, etc. often use pins 50=MISO,
+// 51=MOSI, 52=SCK, 53=SS, but one can just simply use the ICSP header pins
+// ICSP-1=MISO, ICSP-4=MOSI, ICSP-3=SCK, which are consistent across all boards
+// - Due boards also have a SPI header, which is set up exactly like the ICSP
+// header). The module's MOSI line can simply be grounded since the module only
+// uses SPI for slave-out data transfers (slave-in data transfers being
+// ignored). The SS pin may be any digital output pin, with usage being
+// active-low.
+//
+// The recommended VCC power supply and logic level is 3.3v, but 5v is also
+// supported. The two isolated power pins on the side of the module's breakout
+// can safely be left disconnected. The minimum SPI transfer rate is ~2.2MHz,
+// which means one needs at least an 8MHz processor, but a 16MHz processor is
+// the recommended minimum given the actual processing work involved to
+// resize/BLIT the final image. The actual SPI transfer rate selected will be
+// the first rate equal to or below 20MHz given the SPI clock divider
 // (i.e. processor speed /2, /4, /8, /16, ..., /128).
 
 #if defined(ARDUINO) && ARDUINO >= 100
@@ -109,12 +123,14 @@ typedef struct {
 } TelemetryData;
 
 // Memory Footprint Note
-// Image storage mode affects the total memory footprint. Memory constrained boards
-// should take notice to the storage requirements. Note that the Lepton FLiR delivers
-// 14bpp thermal image data with AGC mode disabled and 8bpp thermal image data with AGC
-// mode enabled, therefore if using AGC mode always enabled it is more memory efficient
-// to use an 8bpp mode to begin with. Note that with telemetry enabled, memory cost
-// incurs an additional 164 bytes for telemetry data storage.
+//
+// Image storage mode affects the total memory footprint. Memory constrained
+// boards should take notice to the storage requirements. Note that the Lepton
+// FLiR delivers 14bpp thermal image data with AGC mode disabled and 8bpp
+// thermal image data with AGC mode enabled, therefore if using AGC mode always
+// enabled it is more memory efficient to use an 8bpp mode to begin with. Note
+// that with telemetry enabled, memory cost incurs an additional 164 bytes for
+// telemetry data storage.
 typedef enum {
     // Full 16bpp image mode, 9600 bytes for image data, 164 bytes for read frame (9604 bytes total, 9806 bytes if aligned)
     LeptonFLiR_ImageStorageMode_80x60_16bpp,
@@ -145,18 +161,23 @@ typedef enum {
 class LeptonFLiR {
 public:
 #ifndef LEPFLIR_USE_SOFTWARE_I2C
-    // May use a different Wire instance than Wire. Some chipsets, such as Due/Zero/etc.,
-    // have a Wire1 class instance that uses the SDA1/SCL1 lines instead.
+    // May use a different Wire instance than Wire. Some chipsets, such as
+    // Due/Zero/etc., have a Wire1 class instance that uses the SDA1/SCL1 lines
+    // instead.
+    //
     // Supported i2c baud rates are 100kHz, 400kHz, and 1000kHz.
     // Supported SPI baud rates are 2.2MHz to 20MHz.
     LeptonFLiR(TwoWire& i2cWire = Wire, byte spiCSPin = 53);
 #else
-    // Minimum supported i2c baud rate is 100kHz, which means minimum supported processor
-    // speed is 4MHz+ while running i2c standard mode. For 400kHz i2c baud rate, minimum
-    // supported processor speed is 16MHz+ while running i2c fast mode.
+    // Minimum supported i2c baud rate is 100kHz, which means minimum supported
+    // processor speed is 4MHz+ while running i2c standard mode. For 400kHz i2c
+    // baud rate, minimum supported processor speed is 16MHz+ while running i2c
+    // fast mode.
+    //
     // Supported SPI baud rates are 2.2MHz to 20MHz.
     LeptonFLiR(byte spiCSPin = 53);
 #endif
+
     ~LeptonFLiR();
 
     // Called in setup()
@@ -186,15 +207,18 @@ public:
     uint32_t getTelemetryFrameCounter();
     bool getShouldRunFFCNormalization();
 
-    // Sets fast enable/disable methods to call when enabling and disabling the SPI chip
-    // select pin (e.g. PORTB |= 0x01, PORTB &= ~0x01, etc.). The function itself depends
-    // on the board and pin used (see also digitalWriteFast library). Enable should set
-    // the pin LOW, and disable should set the pin HIGH (aka active-low).
+    // Sets fast enable/disable methods to call when enabling and disabling the
+    // SPI chip select pin (e.g. PORTB |= 0x01, PORTB &= ~0x01, etc.). The
+    // function itself depends on the board and pin used (see also
+    // digitalWriteFast library). Enable should set the pin LOW, and disable
+    // should set the pin HIGH (aka active-low).
     typedef void(*digitalWriteFunc)(byte); // Passes pin number in
-    void setFastCSFuncs(digitalWriteFunc csEnableFunc, digitalWriteFunc csDisableFunc);
+    void setFastCSFuncs(digitalWriteFunc csEnableFunc,
+        digitalWriteFunc csDisableFunc);
 
-    // This method reads the next image frame, taking up considerable processor time.
-    // Returns a boolean indicating if next frame was successfully retrieved or not.
+    // This method reads the next image frame, taking up considerable processor
+    // time. Returns a boolean indicating if next frame was successfully
+    // retrieved or not.
     bool readNextFrame();
 
     // AGC module commands
@@ -235,7 +259,7 @@ public:
     LEP_VID_POLARITY vid_getPolarity();
 
     void vid_setPseudoColorLUT(LEP_VID_PCOLOR_LUT table); // def:LEP_VID_FUSION_LUT
-    LEP_VID_PCOLOR_LUT vid_getPseudoColorLUT(); 
+    LEP_VID_PCOLOR_LUT vid_getPseudoColorLUT();
 
     void vid_setFocusCalcEnabled(bool enabled); // def:disabled
     bool vid_getFocusCalcEnabled();
@@ -399,6 +423,7 @@ private:
 #ifdef LEPFLIR_USE_SOFTWARE_I2C
     uint8_t _readBytes;
 #endif
+
     void i2cWire_beginTransmission(uint8_t);
     uint8_t i2cWire_endTransmission(void);
     uint8_t i2cWire_requestFrom(uint8_t, uint8_t);
